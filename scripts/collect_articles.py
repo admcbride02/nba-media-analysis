@@ -18,7 +18,7 @@ PLAYERS = ["LeBron James", "Stephen Curry"]
 
 # NewsAPI free tier only reliably goes back ~30 days,
 # but we set this anyway for when you upgrade to a paid plan
-FROM_DATE = "2009-01-01"
+FROM_DATE = "2026-03-01"
 TO_DATE = datetime.today().strftime("%Y-%m-%d")  # today's date automatically
 
 # How many articles to fetch per player (max 100 per request on free tier)
@@ -94,8 +94,13 @@ def main():
         # Wait 1 second between requests to be polite to the API
         time.sleep(1)
 
-    # Convert to a pandas DataFrame (like a spreadsheet in Python)
+    # Convert to a pandas DataFrame
     df = pd.DataFrame(all_articles)
+
+    # If nothing came back, exit gracefully
+    if df.empty:
+        print("\nNo articles were returned. Check your API key or date range.")
+        return
 
     # Drop any rows where both headline and body are empty
     df = df.dropna(subset=["headline", "body"], how="all")
@@ -107,7 +112,6 @@ def main():
     df.to_csv(OUTPUT_FILE, index=False, encoding="utf-8")
 
     print(f"\nDone! Saved {len(df)} articles to '{OUTPUT_FILE}'")
-    print(df[["player", "date", "outlet", "headline"]].head(10))  # preview first 10 rows
-
+    print(df[["player", "date", "outlet", "headline"]].head(10))
 if __name__ == "__main__":
     main()
